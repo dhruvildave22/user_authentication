@@ -1,8 +1,8 @@
 class Api::V2::SessionsController < ApplicationController
   skip_before_action :verify_authenticity_token
-  skip_before_action :authenticate_token, only: %i[login]
-  # skip_before_action :authenticate_token, :delete_expired_token, :current_user, :authorize!, only: %i[login forgot_password]
-  before_action :exists#, :authenticate_user_role, except: [:logout]
+  # skip_before_action :authenticate_token, only: %i[login]
+  skip_before_action :authenticate_token, :delete_expired_token, :current_user, only: %i[login forgot_password]
+  before_action :exists, except: [:logout]
 
   before_action :authenticate_user, :generate_auth_token, only: [:login]
 
@@ -15,6 +15,10 @@ class Api::V2::SessionsController < ApplicationController
     render json: {}, status: :ok
   end
 
+  def forgot_password
+    @user.generate_reset_password_token
+    render json: { user: UserPresenter.new(@user)._show(reset_password_token_included: true) }, status: :ok
+  end
 
   private
 
